@@ -1,0 +1,8 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: worker 
+  name: rhcos-layering-simple-kmod-patch
+spec:
+  osImageURL: quay.io/midu/simple-kmod:4.12.0

@@ -1,0 +1,32 @@
+# Using a 4.12.0 image
+# export OCP_VERSION="4.12.0"
+# curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/$OCP_VERSION/release.txt | grep -m1 'rhel-coreos-8' | awk -F ' ' '{print $2}'
+ARG rhel_coreos_release
+ARG driver_toolkit_release
+
+FROM ${rhel_coreos_release} as kernel-query
+#We can't use the `uname -r` as it will pick up the host kernel version
+RUN rpm -qa kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}' > /kernel-version.txt
+
+# export OCP_VERSION="4.12.0"
+# curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/$OCP_VERSION/release.txt | grep -m1 'driver-toolkit' | awk -F ' ' '{print $2}'
+FROM ${driver_toolkit_release} as builder
+COPY --from=kernel-query /kernel-version.txt /kernel-version.txt
+
+#Install build dependencies, these differ module by module
+#This example uses: https://github.com/openshift-psap/simple-kmod
+RUN dnf install -y make gcc
+
+#Downloading kmod source and build it:
+WORKDIR /
+RUN git clone https://github.com/openshift-psap/simple-kmod.git
+WORKDIR /simple-kmod
+RUN make all KVER=$(cat /kernel-version.txt)
+
+#Install kernel module on top of the image with the custom kernel:
+FROM ${rhel_coreos_release}
+COPY --from=builder /simple-kmod /simple-kmod
+WORKDIR /simple-kmod
+RUN make install KVER=$(rpm -qa kernel --queryformat '%{VERSION}-%{RELEASE}.%{ARCH}') && \
+    rm -rf /simple-kmod && \
+    ostree container commit

@@ -1,0 +1,62 @@
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  labels:
+    app: simple-kmod-driver-container
+  name: simple-kmod-driver-container
+  namespace: simple-kmod
+spec: {}
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  labels:
+    app: simple-kmod-driver-build
+  name: simple-kmod-driver-build
+  namespace: simple-kmod
+spec:
+  nodeSelector:
+    node-role.kubernetes.io/worker: ""
+  runPolicy: "Serial"
+  triggers:
+    - type: "ConfigChange"
+    - type: "ImageChange"
+  source:
+    dockerfile: |
+      ARG DTK
+      FROM ${DTK} as builder
+
+      ARG KVER
+
+      WORKDIR /build/
+
+      RUN git clone https://github.com/openshift-psap/simple-kmod.git
+
+      WORKDIR /build/simple-kmod
+
+      RUN make all install KVER=${KVER}
+
+      FROM registry.redhat.io/ubi8/ubi-minimal
+
+      ARG KVER
+
+      # Required for installing `modprobe`
+      RUN microdnf install kmod
+
+      COPY --from=builder /lib/modules/${KVER}/simple-kmod.ko /lib/modules/${KVER}/
+      COPY --from=builder /lib/modules/${KVER}/simple-procfs-kmod.ko /lib/modules/${KVER}/
+      RUN depmod ${KVER}
+  strategy:
+    dockerStrategy:
+      buildArgs:
+        - name: KMODVER
+          value: DEMO
+          # oc adm release info quay.io/openshift-release-dev/ocp-release:<cluster version>-x86_64 --image-for=driver-toolkit
+        - name: DTK
+          value: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:b53883ca2bac5925857148c4a1abc300ced96c222498e3bc134fe7ce3a1dd404
+        - name: KVER
+          value: 4.18.0-372.49.1.el8_6.x86_64
+  output:
+    to:
+      kind: ImageStreamTag
+      name: simple-kmod-driver-container:demo

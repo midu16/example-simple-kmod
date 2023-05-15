@@ -1,0 +1,50 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: example-module-dockerfile
+  namespace: default 
+data:
+  Dockerfile: |
+    ARG DTK_AUTO
+    ARG KERNEL_VERSION
+    FROM ${DTK_AUTO} as builder
+    WORKDIR /build/
+    RUN git clone -b main --single-branch https://github.com/rh-ecosystem-edge/kernel-module-management.git
+    WORKDIR kernel-module-management/ci/kmm-kmod/
+    RUN make
+    FROM registry.access.redhat.com/ubi8/ubi:latest
+    ARG KERNEL_VERSION
+    RUN yum -y install kmod && yum clean all
+    RUN mkdir -p /opt/lib/modules/${KERNEL_VERSION}
+    COPY --from=builder /build/kernel-module-management/ci/kmm-kmod/*.ko /opt/lib/modules/${KERNEL_VERSION}/
+    RUN /usr/sbin/depmod -b /opt
+---
+apiVersion: kmm.sigs.x-k8s.io/v1beta1
+kind: Module
+metadata:
+  name: example-module
+  namespace: default 
+spec:
+  moduleLoader:
+    serviceAccountName: default 
+    container:
+      modprobe:
+        moduleName: simple_kmod
+      kernelMappings:
+        - regexp: '^.*\.x86_64$'
+          containerImage: < the name of the final driver container to produce>
+          build:
+            dockerfileConfigMap:
+              name: example-module-dockerfile
+          sign:
+            keySecret:
+              name: <private key secret name>
+            certSecret:
+              name: <certificate secret name>
+            filesToSign:
+              - /opt/lib/modules/4.18.0-348.2.1.el8_5.x86_64/kmm_ci_a.ko
+  imageRepoSecret: 
+    name: repo-pull-secret
+  selector: # top-level selector
+    kubernetes.io/arch: amd64
