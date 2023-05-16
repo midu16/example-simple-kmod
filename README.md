@@ -1,6 +1,6 @@
-# Evaluation of out-of-tree driver installation methods
+# Evaluation of out-of-tree driver management methods
 
-- [Evaluation of out-of-tree driver installation methods](#evaluation-of-out-of-tree-driver-installation-methods)
+- [Evaluation of out-of-tree driver management methods](#evaluation-of-out-of-tree-driver-management-methods)
   - [Purpose](#purpose)
   - [Prerequisites](#prerequisites)
   - [Environment used](#environment-used)
