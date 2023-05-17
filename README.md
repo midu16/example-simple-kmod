@@ -1,6 +1,11 @@
-# Evaluation of out-of-tree driver management methods
+# <center>Evaluation of out-of-tree driver management methods</center>
+
+## Intended Audience
+
+This document has been prepared to document the procedure on how to manage out-of-tree driver, features and present a set of features particular to each method. The intended audience is any Red Hat OCP user which intends to evaluate the tools for serving its use-case.
 
 - [Evaluation of out-of-tree driver management methods](#evaluation-of-out-of-tree-driver-management-methods)
+  - [Intended Audience](#intended-audience)
   - [Purpose](#purpose)
   - [Prerequisites](#prerequisites)
   - [Environment used](#environment-used)
@@ -75,17 +80,17 @@ In this section we are going to discuss on how to [build][kmm-simple-kmod] your 
 
 ## Summary 
 
-| Out-Of-Tree method  | Additional resource consumption      | Day1  | Day2 | Upgrade rollout  | Memory consumption [B] |
-|---------------------|--------------------------------------|-------|------|------------------| ---------------------- |
-| RHCOS Layering      | -                                    | yes   | yes  |  no              |  #N/A                  |
-| DriverToolKit       | yes                                  | yes   | yes  |  yes             |  800k - 1M             |
-| KMM Operator        | yes                                  | yes   | yes  |  yes             |                        |
+| Out-Of-Tree method  | Additional resource consumption | Day1  | Day2 | Upgrade rollout  | Memory consumption [B] | Size of the builed image [B] |
+|---------------------|---------------------------------|-------|------|------------------| ---------------------- | ---------------------------- |
+| RHCOS Layering      | -                               | yes   | yes  |  no              |  #N/A                  | 1.1 G                        |
+| DriverToolKit       | yes                             | yes   | yes  |  yes             |  800k - 1M             | 47.5 M                       |
+| KMM Operator        | yes                             | yes   | yes  |  yes             |                        |                              |
 
 ## Resources
 
 1. [DriverToolKit][dtk]
 2. [KMM][kmm]
-3. 
+3. [RHCOS Layering][rhcos-layering]
 4. [PauseMCPReboot][disable-reboot]
 
 [dtk]: https://docs.openshift.com/container-platform/4.12/hardware_enablement/psap-driver-toolkit.html
@@ -93,3 +98,5 @@ In this section we are going to discuss on how to [build][kmm-simple-kmod] your 
 [kmm]: https://docs.okd.io/4.12/hardware_enablement/kmm-kernel-module-management.html
 
 [disable-reboot]: https://access.redhat.com/solutions/5477811
+
+[rhcos-layering]: https://docs.openshift.com/container-platform/4.12/post_installation_configuration/coreos-layering.html
