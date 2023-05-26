@@ -1,5 +1,20 @@
 # KernelModuleManagement-Operator
 
+## Table of Contents
+
+- [KernelModuleManagement-Operator](#kernelmodulemanagement-operator)
+  - [Table of Contents](#table-of-contents)
+  - [Purpose](#purpose)
+  - [Prerequisites](#prerequisites)
+  - [Environment used](#environment-used)
+  - [How to install KMM Operator on a SNO node](#how-to-install-kmm-operator-on-a-sno-node)
+  - [CPU/Memory usage of resources created by KMM-Operator](#cpumemory-usage-of-resources-created-by-kmm-operator)
+    - [KMM-Operator Memory Usage namespace layer](#kmm-operator-memory-usage-namespace-layer)
+    - [KMM-Operator CPU Usage namespace layer](#kmm-operator-cpu-usage-namespace-layer)
+  - [Configuring the KMM-Operator:](#configuring-the-kmm-operator)
+  - [How to build and sign a out-of-tree kernel driver with KMM:](#how-to-build-and-sign-a-out-of-tree-kernel-driver-with-kmm)
+  - [Architecture](#architecture)
+
 ## Purpose 
 
 In this section we are going to show-case :
@@ -76,9 +91,15 @@ kernel-module-management.v1.0.0   Kernel Module Management   1.0.0              
 
 The following metric has been used in Prometheus: `namespace:container_memory_usage_bytes:sum{namespace="openshift-kmm"}`
 
+### KMM-Operator Memory Usage namespace layer
+![MEMORY-USAGE](screen/02_memory_usage_bytes_openshift_kmm.png)
+
 - CPU usage by the `nammespace` resource created by KMM-Operator:
 
 The following metric has been used in Prometheus: `namespace:container_cpu_usage:sum{namespace="openshift-kmm"}`
+
+### KMM-Operator CPU Usage namespace layer
+![CPU-USAGE](screen/01_cpu_usage_openshift_kmm.png)
 
 ## Configuring the KMM-Operator:
 
@@ -98,10 +119,6 @@ namespace/kmm-tests created
 $ openssl req -x509 -new -nodes -utf8 -sha256 -days 36500 -batch -config configuration_file.config -outform DER -out my_signing_key_pub.der -keyout my_signing_key.priv
 ```
 
-
-## Resources
-
-1. 
 
 
 ## Architecture

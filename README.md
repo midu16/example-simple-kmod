@@ -4,8 +4,11 @@
 
 This document has been prepared to document the procedure on how to manage out-of-tree driver, features and present a set of features particular to each method. The intended audience is any Red Hat OCP user which intends to evaluate the tools for serving its use-case.
 
+## Table of Contents
+
 - [Evaluation of out-of-tree driver management methods](#evaluation-of-out-of-tree-driver-management-methods)
   - [Intended Audience](#intended-audience)
+  - [Table of Contents](#table-of-contents)
   - [Purpose](#purpose)
   - [Prerequisites](#prerequisites)
   - [Environment used](#environment-used)
