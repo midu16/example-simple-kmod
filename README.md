@@ -84,7 +84,9 @@ In this section we are going to discuss on how to [build][kmm-simple-kmod] your 
 |---------------------|---------------------------------|-------|------|------------------| ---------------------- | ---------------------------- |
 | RHCOS Layering      | -                               | yes   | yes  |  no              |  #N/A                  | 1.1 G                        |
 | DriverToolKit       | yes                             | yes   | yes  |  yes             |  800k - 1M             | 47.5 M                       |
-| KMM Operator        | yes                             | yes   | yes  |  yes             |                        |                              |
+| KMM Operator        | yes                             | yes   | yes  |  yes*            |                        |                              |
+
+*Upgrade rollout will impact also the KMM-Operator
 
 ## Resources
 

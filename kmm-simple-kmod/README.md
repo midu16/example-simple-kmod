@@ -17,6 +17,17 @@ In the implementation we are going to use:
 - SNO (SingleNodeOpenShift)
 - KMMv1.0.0 
 
+## Environment used
+
+In the further tests a libvirt environment has been used, each node are using the following specifications:
+- vCPU: 34
+- Memory allocated: 40960MiB
+- Root disk: 100GiB
+- Application disks:
+    - /dev/vdb: 100GiB
+    - /dev/vdc: 100GiB
+- OCP network type used: OVNKubernetes
+
 
 ## How to install KMM Operator on a SNO node
 
@@ -69,6 +80,16 @@ The following metric has been used in Prometheus: `namespace:container_memory_us
 
 The following metric has been used in Prometheus: `namespace:container_cpu_usage:sum{namespace="openshift-kmm"}`
 
+## Configuring the KMM-Operator:
+
+```bash
+$ oc create ns kmm-tests
+namespace/kmm-tests created
+```
+> **Note**
+> <mark>The `kmm-tests` namespace in which the Module will be created.</mark>
+
+
 ## How to build and sign a out-of-tree kernel driver with KMM:
 
 - Adding the keys for secureboot:
@@ -81,6 +102,15 @@ $ openssl req -x509 -new -nodes -utf8 -sha256 -days 36500 -batch -config configu
 ## Resources
 
 1. 
+
+
+## Architecture
+
+In the following Diagram, we are going to presen the `Hub-Spoke` KMM-Operator architecture :
+
+![KMM-HUB-Spoke-Architecture](screen/KMM.png)
+
+
 
 [deploy_kmod]: https://openshift-kmm.netlify.app/documentation/deploy_kmod/
 
