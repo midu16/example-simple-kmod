@@ -133,6 +133,17 @@ $ oc create secret generic my-signing-key-pub --from-file=key=my_signing_key_pub
 $ oc get secret -o yaml my-signing-key-pub -n kmm-tests | awk '/cert/{print $2; exit}' | base64 -d  | openssl x509 -inform der -text
 $ oc get secret -o yaml my-signing-key -n kmm-tests | awk '/key/{print $2; exit}' | base64 -d
 ```
+After these keys are created in OCP, it is also required to enroll public key on target node by adding the public key to the MOK list:
+
+1. Fist we need to import our my_signing_key_pub.der to target node:
+```bash
+$ mokutil --import
+```
+2. Enter a new password for this MOK enrollment request.
+3. Reboot the machine.
+The shim boot loader notices the pending MOK key enrollment request and it launches MokManager.efi to enable you to complete the enrollment from the UEFI console.
+4. Choose Enroll MOK, enter the password you previously associated with this request when prompted, and confirm the enrollment.
+Your public key is added to the MOK list, which is persistent.
 
 - Kernel Module Management (KMM) creates a privileged workload to load the kernel modules on nodes. That workload needs ServiceAccounts allowed to use the privileged SecurityContextConstraint (SCC) resource.
 To allow any ServiceAccount to use the privileged SCC and therefore to run module loader or device plugin pods, use the following command:
@@ -170,7 +181,14 @@ $ oc apply -f pull-secret-robot.yml
 $ oc apply -f kmm_simple_kmod_configmap.yaml
 ```
 
+After we create ConfigMap and Module resources on our cluster, image builder and module loader pods starts running on OCP. Firstly, KMM builds an unsigned image pushes it to the registry with a generated name, then it takes that and signs its kmod and pushes the signed version to the registry with the name you gave it as two separate jobs, so "final" should be your image with signed kmods in it, the other one is the intermediate built-but-not-signed image.
 ![QUAY-REPO-IMAGES](screen/quayuploadedimages.png)
+
+Later on, DaemonSet starts running on the cluster to load the module to target node. When this DaemonSet starts running, module gets loaded to node. It is possible to verify this by logging in to target node and run the following command:
+```bash
+$ lsmod | grep kmm
+kmm_ci_a               16384  0
+```
 
 ## Architecture
 
