@@ -196,6 +196,16 @@ In the following Diagram, we are going to presen the `Hub-Spoke` KMM-Operator ar
 
 ![KMM-HUB-Spoke-Architecture](screen/KMM.png)
 
+## Features 
+
+Kernel Module Management (KMM) 1.1 Operator is a follow-on release to KMM 1.0, which contains the following new features:
+- Disconnected support
+- Hub and spoke GA support
+- SRO to KMM migration
+- Orderly kmod upgrades
+- Day 1 support through KMM 
+- In-tree kernel module replacement with OOT kernel module
+- Multiple independent kernel modules deployment via single KMM Module
 
 
 [deploy_kmod]: https://openshift-kmm.netlify.app/documentation/deploy_kmod/
