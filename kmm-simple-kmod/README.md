@@ -113,13 +113,82 @@ namespace/kmm-tests created
 
 ## How to build and sign a out-of-tree kernel driver with KMM:
 
-- Adding the keys for secureboot:
+- Create the sb_cert.cer file that contains the certificate and the sb_cert.priv file that contains the private key:
 
 ```bash
-$ openssl req -x509 -new -nodes -utf8 -sha256 -days 36500 -batch -config configuration_file.config -outform DER -out my_signing_key_pub.der -keyout my_signing_key.priv
+$ openssl req -x509 -new -nodes -utf8 -sha256 -days 36500 -batch -outform DER -out my_signing_key_pub.der -keyout my_signing_key.priv
+```
+Now, the two files created (my_signing_key_pub.der containing the cert and my_signing_key.priv containing the private key)
+
+- Add the files by following method as secrets:
+
+```bash
+$ oc create secret generic my-signing-key --from-file=key=my_signing_key.priv
+$ oc create secret generic my-signing-key-pub --from-file=key=my_signing_key_pub.der
 ```
 
+- After you have added the keys, you must check them to ensure they are set correctly.
 
+```bash
+$ oc get secret -o yaml my-signing-key-pub -n kmm-tests | awk '/cert/{print $2; exit}' | base64 -d  | openssl x509 -inform der -text
+$ oc get secret -o yaml my-signing-key -n kmm-tests | awk '/key/{print $2; exit}' | base64 -d
+```
+After these keys are created in OCP, it is also required to enroll public key on target node by adding the public key to the MOK list:
+
+1. Fist we need to import our my_signing_key_pub.der to target node:
+```bash
+$ mokutil --import
+```
+2. Enter a new password for this MOK enrollment request.
+3. Reboot the machine.
+The shim boot loader notices the pending MOK key enrollment request and it launches MokManager.efi to enable you to complete the enrollment from the UEFI console.
+4. Choose Enroll MOK, enter the password you previously associated with this request when prompted, and confirm the enrollment.
+Your public key is added to the MOK list, which is persistent.
+
+- Kernel Module Management (KMM) creates a privileged workload to load the kernel modules on nodes. That workload needs ServiceAccounts allowed to use the privileged SecurityContextConstraint (SCC) resource.
+To allow any ServiceAccount to use the privileged SCC and therefore to run module loader or device plugin pods, use the following command:
+
+```bash
+$ oc adm policy add-scc-to-user privileged -z "default" [ -n "openshift-kmm" ]
+```
+
+- The Module will build a new container image using the source code from the repository. The image produced is saved back in the registry with a temporary name, and this temporary image is then signed using the parameters in the sign section. This means that we need to create new registry in our Quay account. We need to create public new repository in our account:
+
+![NEW-REPO](screen/quaynewrepo.png)
+
+- In order for our OCP cluster to access this repo we need to create robot account in our Quay account and give access to this new repo:
+
+![NEW-ROBOT-ACCOUNT](screen/quaynewrobotaccount.png)
+
+![NEW-ROBOT-ACCOUNT-PERMISSION](screen/quayrobotsetrepopermission.png)
+
+![NEW-ROBOT-ACCOUNT-PERMISSION2](screen/quayrobotsetrepopermission2.png)
+
+- Now, we need to download OCP Secret of this repo credentials:
+
+![NEW-ROBOT-SECRET-DOWNLOAD](screen/quayrobotdownloadcredentials.png)
+
+![NEW-ROBOT-SECRET-DOWNLOAD](screen/quayrobotdownloadcredentials2.png)
+
+```bash
+$ oc apply -f pull-secret-robot.yml
+```
+
+[kmm_simple_kmod_config.yaml]: kmm_simple_kmod_configmap.yaml
+- Now in order to build and sign a ModuleLoader container image we will use following [kmm_simple_kmod_config.yaml] YAML file. For example, using the following YAML file, Kernel Module Management (KMM) builds an image named quay.io/skoksal/minimal-driver:final_openshift-kmm_example-module_kmm_unsigned containing the build with unsigned kmods and push it to the registry. Then it creates a second image named quay.io/skoksal/minimal-driver:final that contains the signed kmods. It is this second image that is loaded by the DaemonSet object and deploys the kmods to the cluster nodes.
+
+```bash
+$ oc apply -f kmm_simple_kmod_configmap.yaml
+```
+
+After we create ConfigMap and Module resources on our cluster, image builder and module loader pods starts running on OCP. Firstly, KMM builds an unsigned image pushes it to the registry with a generated name, then it takes that and signs its kmod and pushes the signed version to the registry with the name you gave it as two separate jobs, so "final" should be your image with signed kmods in it, the other one is the intermediate built-but-not-signed image.
+![QUAY-REPO-IMAGES](screen/quayuploadedimages.png)
+
+Later on, DaemonSet starts running on the cluster to load the module to target node. When this DaemonSet starts running, module gets loaded to node. It is possible to verify this by logging in to target node and run the following command:
+```bash
+$ lsmod | grep kmm
+kmm_ci_a               16384  0
+```
 
 ## Architecture
 
