@@ -87,7 +87,7 @@ In this section we are going to discuss on how to [build][kmm-simple-kmod] your 
 |---------------------|---------------------------------|-------|------|------------------| ---------------------- | ---------------------------- |
 | RHCOS Layering      | -                               | yes   | yes  |  no              |  #N/A                  | 1.1 G                        |
 | DriverToolKit       | yes                             | yes   | yes  |  yes             |  800k - 1M             | 47.5 M                       |
-| KMM Operator        | yes                             | yes   | yes  |  yes*            |                        |                              |
+| KMM Operator        | yes                             | yes   | yes  |  yes*            |  [5]                   | [5]                          |
 
 *Upgrade rollout will impact also the KMM-Operator
 
@@ -97,10 +97,13 @@ In this section we are going to discuss on how to [build][kmm-simple-kmod] your 
 2. [KMM][kmm]
 3. [RHCOS Layering][rhcos-layering]
 4. [PauseMCPReboot][disable-reboot]
+5. [KMM Resource utilization][kmm-resource-consumption]
 
 [dtk]: https://docs.openshift.com/container-platform/4.12/hardware_enablement/psap-driver-toolkit.html
 
 [kmm]: https://docs.okd.io/4.12/hardware_enablement/kmm-kernel-module-management.html
+
+[kmm-resource-consumption]: https://cloud.redhat.com/blog/scale-testing-kernel-module-management
 
 [disable-reboot]: https://access.redhat.com/solutions/5477811
 
